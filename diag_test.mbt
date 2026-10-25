@@ -286,3 +286,11 @@ test "DTC status filter keeps matching records" {
   assert_eq(confirmed.length(), 1)
   assert_eq(confirmed[0].code, "P0301-2F")
 }
+
+///|
+test "flow-control frames are counted and ignored" {
+  let reasm = IsotpReassembler::new()
+  assert_true(reasm.push(h("30 00 00 00 00 00 00 00")) is None)
+  assert_eq(reasm.flow_control_count(), 1)
+  assert_true(!reasm.is_active())
+}

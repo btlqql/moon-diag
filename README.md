@@ -84,11 +84,11 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 
 ## 测试
 
-`moon test` 共 16 项：
+`moon test` 共 17 项：
 
 - 十六进制编解码与分隔符、非法半字节。
 - candump 经典格式、`candump -L` 格式、扩展帧。
-- ISO-TP 单帧/多帧往返；序列号错误；长度不足。
+- ISO-TP 单帧/多帧往返；序列号错误；长度不足；流控帧计数。
 - DTC 代码、failure type、状态位与按状态过滤。
 - UDS 请求构造（会话、DID、安全访问、TesterPresent、清码、下载）。
 - UDS 正响应、负响应、DID、DTC 解析。

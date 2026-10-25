@@ -21,6 +21,7 @@ pub(all) struct IsotpReassembler {
   mut payload : Array[Int]
   mut next_seq : Int
   mut active : Bool
+  mut flow_control : Int
 }
 
 pub fn IsotpReassembler::new(max_len? : Int = 4095) -> IsotpReassembler {
@@ -30,11 +31,16 @@ pub fn IsotpReassembler::new(max_len? : Int = 4095) -> IsotpReassembler {
     payload: Array::new(),
     next_seq: 0,
     active: false,
+    flow_control: 0,
   }
 }
 
 pub fn IsotpReassembler::is_active(self : IsotpReassembler) -> Bool {
   self.active
+}
+
+pub fn IsotpReassembler::flow_control_count(self : IsotpReassembler) -> Int {
+  self.flow_control
 }
 
 fn take_payload(self : IsotpReassembler) -> Array[Int] {
@@ -132,7 +138,8 @@ pub fn IsotpReassembler::push(
       None
     }
   } else if kind == 3 {
-    // Flow control: valid on the wire, ignored for offline reassembly.
+    // Flow control: valid on the wire, counted but not part of the payload.
+    self.flow_control = self.flow_control + 1
     None
   } else {
     raise InvalidLength(kind)
