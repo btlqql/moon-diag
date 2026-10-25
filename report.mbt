@@ -398,3 +398,43 @@ pub fn render_json(report : DiagReport) -> String {
   quoted_array(incomplete) + ",\"events\":[" + events.join(",") +
   "],\"errors\":" + quoted_array(errors) + "}"
 }
+
+fn csv_field(text : String) -> String {
+  let out = StringBuilder()
+  out.write_char('"')
+  for i in 0..<text.length() {
+    let c = text[i].to_int()
+    if c == 34 {
+      out.write_string("\"\"")
+    } else {
+      out.write_char(Char::from_int(c))
+    }
+  }
+  out.write_char('"')
+  out.to_string()
+}
+
+pub fn render_csv(report : DiagReport) -> String {
+  let out = StringBuilder()
+  out.write_string("can_id,kind,detail\n")
+  for event in report.events {
+    match event {
+      UdsEvent(id, message) =>
+        out.write_string(
+          "0x" + hex_can_id(id) + ",uds," +
+          csv_field(describe_uds(id, message)) + "\n",
+        )
+      ObdEvent(id, message) =>
+        out.write_string(
+          "0x" + hex_can_id(id) + ",obd," +
+          csv_field(describe_obd(id, message)) + "\n",
+        )
+      RawEvent(id, payload) =>
+        out.write_string(
+          "0x" + hex_can_id(id) + ",raw," + csv_field(hex_encode(payload)) +
+          "\n",
+        )
+    }
+  }
+  out.to_string()
+}

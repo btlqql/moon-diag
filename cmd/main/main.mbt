@@ -119,15 +119,21 @@ fn run() -> Unit {
   if command == "--help" || command == "help" {
     usage()
   } else if command == "report" {
-    let mut json = false
+    let mut format = "text"
     let mut path = ""
     if args.length() == 4 {
       path = args[3]
     } else if args.length() == 5 && args[3] == "--json" {
-      json = true
+      format = "json"
       path = args[4]
     } else if args.length() == 5 && args[4] == "--json" {
-      json = true
+      format = "json"
+      path = args[3]
+    } else if args.length() == 5 && args[3] == "--csv" {
+      format = "csv"
+      path = args[4]
+    } else if args.length() == 5 && args[4] == "--csv" {
+      format = "csv"
       path = args[3]
     } else {
       usage()
@@ -137,8 +143,10 @@ fn run() -> Unit {
     match read_text(path) {
       Some(text) => {
         let report = @diag.analyze_log(text)
-        println(if json {
+        println(if format == "json" {
           @diag.render_json(report)
+        } else if format == "csv" {
+          @diag.render_csv(report)
         } else {
           @diag.render_report(report)
         })

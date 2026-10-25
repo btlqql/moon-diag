@@ -31,6 +31,7 @@ MoonCakes 上已有 CAN 2.0 / CAN-FD 帧编解码与过滤器实现，例如
 moon test
 moon run cmd/main --target js -- report examples/session.log
 moon run cmd/main --target js -- report examples/session.log --json
+moon run cmd/main --target js -- report examples/session.log --csv
 ```
 
 `examples/session.log` 的输出：
@@ -50,7 +51,7 @@ CAN 0x7E0 OBD PID 0x05 Coolant temperature = 83 C
 ## CLI
 
 ```text
-moondiag report <candump.log> [--json] decode a recorded session
+moondiag report <candump.log> [--json|--csv] decode a recorded session
 moondiag uds <hex>                     parse a UDS response
 moondiag obd <hex>                     decode an OBD-II response
 moondiag dtc <hex>                     decode DTC triples (high low status)
@@ -83,7 +84,7 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 
 ## 测试
 
-`moon test` 共 13 项：
+`moon test` 共 14 项：
 
 - 十六进制编解码与分隔符、非法半字节。
 - candump 经典格式、`candump -L` 格式、扩展帧。
@@ -93,7 +94,7 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 - UDS 正响应、负响应、DID、DTC 解析。
 - OBD-II RPM、水温、车速、油位、Mode 03 故障码、Mode 06 监测结果、Mode 09 VIN。
 - 会话报告分组、计数、VIN 提取；未完成传输报告。
-- JSON 报告：计数、事件类型、UDS/NRC、DTC 与 OBD 读数。
+- JSON / CSV 报告：计数、事件类型、UDS/NRC、DTC 与 OBD 读数。
 
 GitHub Actions 在 wasm、wasm-gc、js、native 四个后端执行 check/build/test。
 

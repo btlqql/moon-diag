@@ -248,3 +248,16 @@ test "OBD mode 06 monitor result" {
   }
   assert_true(parse_obd_mode06(h("46 01")) is None)
 }
+
+///|
+test "CSV report includes one row per message" {
+  let log = [
+    "can0 7E8 [8] 03 7F 22 31 00 00 00 00",
+    "can0 7E0 [8] 06 41 0C 1A F8 00 00 00",
+  ].join("\n")
+  let csv = render_csv(analyze_log(log))
+  assert_true(csv.has_prefix("can_id,kind,detail\n"))
+  assert_true(csv.contains("0x7E8,uds,"))
+  assert_true(csv.contains("0x7E0,obd,"))
+  assert_true(csv.contains("requestOutOfRange"))
+}
