@@ -278,7 +278,11 @@ fn quoted_array(items : Array[String]) -> String {
 fn dtc_json(list : Array[Dtc]) -> String {
   let items : Array[String] = Array::new()
   for d in list {
-    items.push(json_string(d.code))
+    items.push(
+      "{\"code\":" + json_string(d.code) + ",\"failureType\":" +
+      json_string("0x" + hex_int(d.failure_type, 2)) + ",\"status\":" +
+      json_string("0x" + hex_int(d.status, 2)) + "}",
+    )
   }
   quoted_array(items)
 }

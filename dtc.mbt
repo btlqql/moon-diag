@@ -4,6 +4,7 @@ pub(all) struct Dtc {
   code : String
   system : String
   description : String
+  failure_type : Int
   status : Int
   status_bits : Array[String]
 }
@@ -47,9 +48,45 @@ pub fn decode_dtc(high : Int, low : Int, status? : Int = 0) -> Dtc {
     code,
     system: systems[system_index],
     description: "",
+    failure_type: 0,
     status,
     status_bits: decode_dtc_status(status),
   }
+}
+
+// UDS records are 3-byte DTC + 1 status byte. The third DTC byte is the
+// failure type byte, while the displayed code comes from the first two bytes.
+pub fn decode_uds_dtc(
+  high : Int,
+  middle : Int,
+  failure_type : Int,
+  status : Int,
+) -> Dtc {
+  let base = decode_dtc(high, middle, status=status)
+  {
+    code: base.code + "-" + hex_byte(failure_type),
+    system: base.system,
+    description: base.description,
+    failure_type,
+    status,
+    status_bits: base.status_bits,
+  }
+}
+
+fn hex_byte(value : Int) -> String {
+  let out = StringBuilder()
+  out.write_char(hex_nibble_char(value >> 4))
+  out.write_char(hex_nibble_char(value))
+  out.to_string()
+}
+
+pub fn is_present_uds_record(
+  high : Int,
+  middle : Int,
+  failure_type : Int,
+  status : Int,
+) -> Bool {
+  high != 0 || middle != 0 || failure_type != 0 || status != 0
 }
 
 pub fn is_present_dtc(high : Int, low : Int) -> Bool {

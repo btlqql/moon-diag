@@ -250,14 +250,15 @@ pub fn parse_dtc_response(bytes : Array[Int]) -> Array[Dtc]? {
   }
   let out : Array[Dtc] = Array::new()
   let mut i = 3
-  while i + 2 < bytes.length() {
+  while i + 3 < bytes.length() {
     let high = bytes[i]
-    let low = bytes[i + 1]
-    let status = bytes[i + 2]
-    if is_present_dtc(high, low) {
-      out.push(decode_dtc(high, low, status=status))
+    let middle = bytes[i + 1]
+    let failure_type = bytes[i + 2]
+    let status = bytes[i + 3]
+    if is_present_uds_record(high, middle, failure_type, status) {
+      out.push(decode_uds_dtc(high, middle, failure_type, status))
     }
-    i = i + 3
+    i = i + 4
   }
   Some(out)
 }

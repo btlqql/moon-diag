@@ -145,7 +145,9 @@ test "UDS responses decode positive, negative and DTC payloads" {
   match parse_dtc_response(h("59 02 FF 03 01 2F 00 00 00")) {
     Some(list) => {
       assert_eq(list.length(), 1)
-      assert_eq(list[0].code, "P0301")
+      assert_eq(list[0].code, "P0301-2F")
+      assert_eq(list[0].failure_type, 0x2f)
+      assert_eq(list[0].status, 0)
     }
     None => fail("DTC response should parse")
   }
