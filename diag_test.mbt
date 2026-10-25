@@ -223,3 +223,14 @@ test "JSON report carries counts and event kinds" {
   assert_true(json.contains("\"kind\":\"obd\""))
   assert_true(json.contains("\"reason\":\"requestOutOfRange\""))
 }
+
+///|
+test "OBD mode 09 VIN extraction" {
+  let vin_bytes = h("31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 47")
+  let payload : Array[Int] = [0x49, 0x02, 0x01]
+  for b in vin_bytes {
+    payload.push(b)
+  }
+  assert_eq(parse_obd_vin(payload), Some("1234567890ABCDEFG"))
+  assert_true(parse_obd_vin(h("49 02")) is None)
+}

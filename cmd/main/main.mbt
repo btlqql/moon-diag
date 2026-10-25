@@ -64,6 +64,13 @@ fn print_uds(bytes : Array[Int]) -> Unit {
 }
 
 fn print_obd(bytes : Array[Int]) -> Unit {
+  match @diag.parse_obd_vin(bytes) {
+    Some(vin) => {
+      println("VIN=" + vin)
+      return
+    }
+    None => ()
+  }
   match @diag.parse_obd_message(bytes) {
     @diag.Mode01(pid, raw) => {
       let data : Array[Int] = Array::new()

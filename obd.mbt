@@ -215,3 +215,21 @@ pub fn parse_obd_message(bytes : Array[Int]) -> ObdMessage {
     Unknown(bytes)
   }
 }
+
+// OBD mode 09 PID 02 returns the VIN. Some ECUs prefix a frame counter, so
+// take the final 17 printable ASCII bytes after the mode/PID header.
+pub fn parse_obd_vin(bytes : Array[Int]) -> String? {
+  if bytes.length() < 19 || bytes[0] != 0x49 || bytes[1] != 0x02 {
+    return None
+  }
+  let start = bytes.length() - 17
+  let vin = StringBuilder()
+  for i in start..<bytes.length() {
+    let b = bytes[i]
+    if b < 32 || b > 126 {
+      return None
+    }
+    vin.write_char(Char::from_int(b))
+  }
+  Some(vin.to_string())
+}
