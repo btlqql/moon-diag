@@ -438,3 +438,46 @@ pub fn render_csv(report : DiagReport) -> String {
   }
   out.to_string()
 }
+
+pub(all) struct IdSummary {
+  can_id : Int
+  messages : Int
+  negatives : Int
+}
+
+pub fn summarize_by_id(report : DiagReport) -> Array[IdSummary] {
+  let ids : Array[Int] = Array::new()
+  let counts : Array[Int] = Array::new()
+  let negatives : Array[Int] = Array::new()
+  for event in report.events {
+    let id = match event {
+      UdsEvent(id, _) => id
+      ObdEvent(id, _) => id
+      RawEvent(id, _) => id
+    }
+    let mut slot = -1
+    for i in 0..<ids.length() {
+      if ids[i] == id {
+        slot = i
+        break
+      }
+    }
+    if slot < 0 {
+      ids.push(id)
+      counts.push(0)
+      negatives.push(0)
+      slot = ids.length() - 1
+    }
+    counts[slot] = counts[slot] + 1
+    match event {
+      UdsEvent(_, Negative(_, _, _)) =>
+        negatives[slot] = negatives[slot] + 1
+      _ => ()
+    }
+  }
+  let out : Array[IdSummary] = Array::new()
+  for i in 0..<ids.length() {
+    out.push({ can_id: ids[i], messages: counts[i], negatives: negatives[i] })
+  }
+  out
+}

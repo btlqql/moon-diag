@@ -261,3 +261,17 @@ test "CSV report includes one row per message" {
   assert_true(csv.contains("0x7E0,obd,"))
   assert_true(csv.contains("requestOutOfRange"))
 }
+
+///|
+test "summary groups messages by CAN id" {
+  let log = [
+    "can0 7E8 [8] 03 7F 22 31 00 00 00 00",
+    "can0 7E8 [8] 02 10 03 00 00 00 00 00",
+    "can0 7E0 [8] 06 41 0C 1A F8 00 00 00",
+  ].join("\n")
+  let summary = summarize_by_id(analyze_log(log))
+  assert_eq(summary.length(), 2)
+  assert_eq(summary[0].can_id, 0x7e8)
+  assert_eq(summary[0].negatives, 1)
+  assert_eq(summary[1].can_id, 0x7e0)
+}
