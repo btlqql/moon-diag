@@ -92,3 +92,13 @@ pub fn is_present_uds_record(
 pub fn is_present_dtc(high : Int, low : Int) -> Bool {
   high != 0 || low != 0
 }
+
+pub fn filter_dtcs_by_status(list : Array[Dtc], mask : Int) -> Array[Dtc] {
+  let out : Array[Dtc] = Array::new()
+  for d in list {
+    if (d.status & mask) != 0 {
+      out.push(d)
+    }
+  }
+  out
+}

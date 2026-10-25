@@ -275,3 +275,14 @@ test "summary groups messages by CAN id" {
   assert_eq(summary[0].negatives, 1)
   assert_eq(summary[1].can_id, 0x7e0)
 }
+
+///|
+test "DTC status filter keeps matching records" {
+  let list : Array[Dtc] = [
+    decode_uds_dtc(0x03, 0x01, 0x2f, 0x2f),
+    decode_uds_dtc(0x03, 0x02, 0x00, 0x01),
+  ]
+  let confirmed = filter_dtcs_by_status(list, 0x08)
+  assert_eq(confirmed.length(), 1)
+  assert_eq(confirmed[0].code, "P0301-2F")
+}

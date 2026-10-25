@@ -84,12 +84,12 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 
 ## 测试
 
-`moon test` 共 15 项：
+`moon test` 共 16 项：
 
 - 十六进制编解码与分隔符、非法半字节。
 - candump 经典格式、`candump -L` 格式、扩展帧。
 - ISO-TP 单帧/多帧往返；序列号错误；长度不足。
-- DTC 代码与状态位。
+- DTC 代码、failure type、状态位与按状态过滤。
 - UDS 请求构造（会话、DID、安全访问、TesterPresent、清码、下载）。
 - UDS 正响应、负响应、DID、DTC 解析。
 - OBD-II RPM、水温、车速、油位、Mode 03 故障码、Mode 06 监测结果、Mode 09 VIN。
