@@ -71,6 +71,16 @@ fn print_obd(bytes : Array[Int]) -> Unit {
     }
     None => ()
   }
+  match @diag.parse_obd_mode06(bytes) {
+    Some(result) => {
+      println(
+        "MID=" + result.mid.to_string() + " TID=" + result.tid.to_string() +
+        " value=0x" + @diag.hex_int(result.value, 4),
+      )
+      return
+    }
+    None => ()
+  }
   match @diag.parse_obd_message(bytes) {
     @diag.Mode01(pid, raw) => {
       let data : Array[Int] = Array::new()

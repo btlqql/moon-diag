@@ -234,3 +234,17 @@ test "OBD mode 09 VIN extraction" {
   assert_eq(parse_obd_vin(payload), Some("1234567890ABCDEFG"))
   assert_true(parse_obd_vin(h("49 02")) is None)
 }
+
+///|
+test "OBD mode 06 monitor result" {
+  match parse_obd_mode06(h("46 01 01 01 12 34 00 00")) {
+    Some(r) => {
+      assert_eq(r.mid, 1)
+      assert_eq(r.tid, 1)
+      assert_eq(r.unit, 1)
+      assert_eq(r.value, 0x1234)
+    }
+    None => fail("mode 06 response should decode")
+  }
+  assert_true(parse_obd_mode06(h("46 01")) is None)
+}

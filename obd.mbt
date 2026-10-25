@@ -233,3 +233,23 @@ pub fn parse_obd_vin(bytes : Array[Int]) -> String? {
   }
   Some(vin.to_string())
 }
+
+pub(all) struct MonitorResult {
+  mid : Int
+  tid : Int
+  unit : Int
+  value : Int
+}
+
+// Mode 06: 46 MID TID UAS TestValue(2) Min(2) Max(2) ...
+pub fn parse_obd_mode06(bytes : Array[Int]) -> MonitorResult? {
+  if bytes.length() < 8 || bytes[0] != 0x46 {
+    return None
+  }
+  Some({
+    mid: bytes[1],
+    tid: bytes[2],
+    unit: bytes[3],
+    value: (bytes[4] << 8) | bytes[5],
+  })
+}
