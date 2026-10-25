@@ -241,3 +241,156 @@ pub fn render_report(report : DiagReport) -> String {
   }
   out.to_string()
 }
+
+fn json_escape(text : String) -> String {
+  let out = StringBuilder()
+  for i in 0..<text.length() {
+    let c = text[i].to_int()
+    if c == 34 {
+      out.write_string("\\\"")
+    } else if c == 92 {
+      out.write_string("\\\\")
+    } else if c == 10 {
+      out.write_string("\\n")
+    } else if c == 13 {
+      out.write_string("\\r")
+    } else if c == 9 {
+      out.write_string("\\t")
+    } else if c < 32 {
+      out.write_string("\\u00")
+      out.write_char(hex_nibble_char(c >> 4))
+      out.write_char(hex_nibble_char(c))
+    } else {
+      out.write_char(Char::from_int(c))
+    }
+  }
+  out.to_string()
+}
+
+fn json_string(text : String) -> String {
+  "\"" + json_escape(text) + "\""
+}
+
+fn quoted_array(items : Array[String]) -> String {
+  "[" + items.join(",") + "]"
+}
+
+fn dtc_json(list : Array[Dtc]) -> String {
+  let items : Array[String] = Array::new()
+  for d in list {
+    items.push(json_string(d.code))
+  }
+  quoted_array(items)
+}
+
+fn uds_event_json(can_id : Int, message : UdsMessage) -> String {
+  let can = json_string("0x" + hex_can_id(can_id))
+  match message {
+    Positive(sid, data) => {
+      let service = sid - 0x40
+      let fields : Array[String] = [
+        "\"canId\":" + can,
+        "\"kind\":\"uds\"",
+        "\"positive\":true",
+        "\"service\":" + json_string("0x" + hex_int(service, 2)),
+        "\"serviceName\":" + json_string(uds_service_name(service)),
+        "\"data\":" + json_string(hex_encode(data)),
+      ]
+      if service == 0x22 && data.length() >= 2 {
+        let full : Array[Int] = [sid]
+        for b in data {
+          full.push(b)
+        }
+        match parse_did_response(full) {
+          Some((did, value)) => {
+            fields.push("\"did\":" + json_string("0x" + hex_int(did, 4)))
+            fields.push("\"value\":" + json_string(hex_encode(value)))
+            fields.push("\"ascii\":" + json_string(ascii(value)))
+          }
+          None => ()
+        }
+      } else if service == 0x19 {
+        let full : Array[Int] = [sid]
+        for b in data {
+          full.push(b)
+        }
+        match parse_dtc_response(full) {
+          Some(list) => fields.push("\"dtcs\":" + dtc_json(list))
+          None => ()
+        }
+      }
+      "{" + fields.join(",") + "}"
+    }
+    Negative(service, nrc, reason) => {
+      let fields : Array[String] = [
+        "\"canId\":" + can,
+        "\"kind\":\"uds\"",
+        "\"positive\":false",
+        "\"service\":" + json_string("0x" + hex_int(service, 2)),
+        "\"nrc\":" + json_string("0x" + hex_int(nrc, 2)),
+        "\"reason\":" + json_string(reason),
+      ]
+      "{" + fields.join(",") + "}"
+    }
+    Malformed(reason) =>
+      "{\"canId\":" + can + ",\"kind\":\"uds\",\"malformed\":" +
+      json_string(reason) + "}"
+  }
+}
+
+fn obd_event_json(can_id : Int, message : ObdMessage) -> String {
+  let can = json_string("0x" + hex_can_id(can_id))
+  match message {
+    Mode01(pid, bytes) => {
+      let data = slice(bytes, 2, bytes.length())
+      match decode_obd_pid(pid, data) {
+        Some(r) =>
+          "{\"canId\":" + can + ",\"kind\":\"obd\",\"mode\":\"0x41\"," +
+          "\"pid\":" + json_string("0x" + hex_int(pid, 2)) + ",\"label\":" +
+          json_string(r.label) + ",\"value\":" + json_string(r.value) +
+          ",\"unit\":" + json_string(r.unit) + "}"
+        None =>
+          "{\"canId\":" + can + ",\"kind\":\"obd\",\"mode\":\"0x41\"," +
+          "\"pid\":" + json_string("0x" + hex_int(pid, 2)) +
+          ",\"supported\":false}"
+      }
+    }
+    DtcResponse(mode, dtcs) =>
+      "{\"canId\":" + can + ",\"kind\":\"obd\",\"mode\":" +
+      json_string("0x" + hex_int(mode, 2)) + ",\"dtcs\":" + dtc_json(dtcs) +
+      "}"
+    Unknown(bytes) =>
+      "{\"canId\":" + can + ",\"kind\":\"obd\",\"unknown\":" +
+      json_string(hex_encode(bytes)) + "}"
+  }
+}
+
+pub fn render_json(report : DiagReport) -> String {
+  let events : Array[String] = Array::new()
+  for event in report.events {
+    match event {
+      UdsEvent(id, message) => events.push(uds_event_json(id, message))
+      ObdEvent(id, message) => events.push(obd_event_json(id, message))
+      RawEvent(id, payload) =>
+        events.push(
+          "{\"canId\":" + json_string("0x" + hex_can_id(id)) +
+          ",\"kind\":\"raw\",\"payload\":" + json_string(hex_encode(payload)) +
+          "}",
+        )
+    }
+  }
+  let incomplete : Array[String] = Array::new()
+  for id in report.incomplete_ids {
+    incomplete.push(json_string("0x" + hex_can_id(id)))
+  }
+  let errors : Array[String] = Array::new()
+  for error in report.errors {
+    errors.push(json_string(error))
+  }
+  "{\"frames\":" + report.frame_count.to_string() + ",\"messages\":" +
+  report.events.length().to_string() + ",\"negativeResponses\":" +
+  report.negative_count.to_string() + ",\"dtcs\":" +
+  report.dtc_count.to_string() + ",\"incompleteIsoTpIds\":" +
+  quoted_array(incomplete) + ",\"events\":[" + events.join(",") +
+  "],\"errors\":" + quoted_array(errors) + "}"
+}

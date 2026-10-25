@@ -102,13 +102,30 @@ fn run() -> Unit {
   if command == "--help" || command == "help" {
     usage()
   } else if command == "report" {
-    if args.length() != 4 {
+    let mut json = false
+    let mut path = ""
+    if args.length() == 4 {
+      path = args[3]
+    } else if args.length() == 5 && args[3] == "--json" {
+      json = true
+      path = args[4]
+    } else if args.length() == 5 && args[4] == "--json" {
+      json = true
+      path = args[3]
+    } else {
       usage()
       exit_code(2)
       return
     }
-    match read_text(args[3]) {
-      Some(text) => println(@diag.render_report(@diag.analyze_log(text)))
+    match read_text(path) {
+      Some(text) => {
+        let report = @diag.analyze_log(text)
+        println(if json {
+          @diag.render_json(report)
+        } else {
+          @diag.render_report(report)
+        })
+      }
       None => {
         stderr("ERROR: cannot read input file")
         exit_code(2)

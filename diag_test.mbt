@@ -207,3 +207,17 @@ test "incomplete ISO-TP transfer is reported" {
   assert_eq(report.incomplete_ids.length(), 1)
   assert_eq(report.events.length(), 0)
 }
+
+///|
+test "JSON report carries counts and event kinds" {
+  let log = [
+    "can0 7E8 [8] 03 7F 22 31 00 00 00 00",
+    "can0 7E0 [8] 06 41 0C 1A F8 00 00 00",
+  ].join("\n")
+  let json = render_json(analyze_log(log))
+  assert_true(json.contains("\"frames\":2"))
+  assert_true(json.contains("\"negativeResponses\":1"))
+  assert_true(json.contains("\"kind\":\"uds\""))
+  assert_true(json.contains("\"kind\":\"obd\""))
+  assert_true(json.contains("\"reason\":\"requestOutOfRange\""))
+}
