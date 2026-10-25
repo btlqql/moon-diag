@@ -1,0 +1,8 @@
+supported_targets = "js"
+
+import {
+  "btlqql/moon_diag" @diag,
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")
