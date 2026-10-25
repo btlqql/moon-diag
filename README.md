@@ -42,7 +42,7 @@ negative responses: 1
 DTCs: 1
 CAN 0x7E8 UDS Negative 0x22 NRC 0x31 requestOutOfRange
 CAN 0x7E8 UDS ReadDataByIdentifier DID 0xF190 = "1234567890ABCDEFG" [...]
-CAN 0x7E8 UDS ReadDTCInformation DTCs: P0301
+CAN 0x7E8 UDS ReadDTCInformation DTCs: P0301-2F
 CAN 0x7E0 OBD PID 0x0C Engine speed = 1726 rpm
 CAN 0x7E0 OBD PID 0x05 Coolant temperature = 83 C
 ```
@@ -96,6 +96,12 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 - JSON 报告：计数、事件类型、UDS/NRC、DTC 与 OBD 读数。
 
 GitHub Actions 在 wasm、wasm-gc、js、native 四个后端执行 check/build/test。
+
+## 外部对照
+
+- [can-isotp 2.0.7 + udsoncan 1.26.1 对照](docs/reference-comparison.md)：ISO-TP 多帧重组、UDS 负响应、DID 正响应、DTC 记录均一致；对照中发现并修复了 UDS DTC 记录长度错误。
+- 复现：`python scripts/reference_compare.py`（参考库装在 `D:\Codex	ools\pyrefs`，不是运行时依赖）。
+- 输入是构造的合法帧，不是真实车辆日志；未覆盖流控时序、全部 UDS 服务和 CAN FD。
 
 ## 明确不做
 
