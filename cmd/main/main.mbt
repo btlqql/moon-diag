@@ -156,6 +156,27 @@ fn run() -> Unit {
         exit_code(2)
       }
     }
+  } else if command == "session" && args.length() == 4 {
+    match read_text(args[3]) {
+      Some(text) => {
+        let outcome = try {
+          Some(@diag.render_uds_session(@diag.analyze_uds_session(text)))
+        } catch {
+          _ => None
+        }
+        match outcome {
+          Some(report) => println(report)
+          None => {
+            stderr("ERROR: ISO-TP reassembly failed")
+            exit_code(1)
+          }
+        }
+      }
+      None => {
+        stderr("ERROR: cannot read input file")
+        exit_code(2)
+      }
+    }
   } else if command == "uds" {
     if args.length() != 4 {
       usage()

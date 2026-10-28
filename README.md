@@ -31,6 +31,7 @@ MoonCakes 上已有 CAN 2.0 / CAN-FD 帧编解码与过滤器实现，例如
 moon test
 moon run cmd/main --target js -- report examples/session.log
 moon run cmd/main --target js -- report examples/session.log --json
+moon run cmd/main --target js -- session examples/uds-sessions/happy.log
 moon run cmd/main --target js -- report examples/session.log --csv
 ```
 
@@ -52,6 +53,7 @@ CAN 0x7E0 OBD PID 0x05 Coolant temperature = 83 C
 
 ```text
 moondiag report <candump.log> [--json|--csv] decode a recorded session
+moondiag session <candump.log>         analyze UDS request/response state
 moondiag uds <hex>                     parse a UDS response
 moondiag obd <hex>                     decode an OBD-II response
 moondiag dtc <hex>                     decode DTC triples (high low status)
@@ -84,7 +86,7 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 
 ## 测试
 
-`moon test` 共 17 项：
+`moon test` 共 25 项：
 
 - 十六进制编解码与分隔符、非法半字节。
 - candump 经典格式、`candump -L` 格式、扩展帧。
@@ -94,6 +96,8 @@ can0 7E8 [8] 02 10 03 00 00 00 00 00
 - UDS 正响应、负响应、DID、DTC 解析。
 - OBD-II RPM、水温、车速、油位、Mode 03 故障码、Mode 06 监测结果、Mode 09 VIN。
 - 会话报告分组、计数、VIN 提取；未完成传输报告。
+- UDS 会话语义：请求/响应配对、3E 80 抑制、0x78 pending、服务不符、会话回显、安全访问顺序、缺失/孤儿响应。
+- 会话语义细节见 [docs/uds-session-analysis.md](docs/uds-session-analysis.md)。
 - JSON / CSV 报告：计数、事件类型、UDS/NRC、DTC 与 OBD 读数。
 - 按 CAN ID 汇总消息数与负响应数。
 
