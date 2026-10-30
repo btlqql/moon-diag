@@ -24,3 +24,9 @@ session命令发现fail时返回1；review输出供人工复核，退出码为0�
 CAN日志按接口及ECU隔离重组和状态，无法解析的非空行报告失败，未完成的ISO-TP消息拒绝。`analyze_uds_exchange`接受有向净荷数组；`analyze_uds_payload_log`接受每行`>>`请求／`<<`响应。
 
 不是刷写器；不运行OEM安全算法，不支持完整UDS/CAN FD/DoIP、真实时序或功能寻址。示例为构造日志；下载审计限未压缩、未加密数据。
+
+## 项目申报书与发布
+
+- [Markdown 项目申报书](docs/proposal.md)
+- [GitHub Release v0.3.0](https://github.com/btlqql/moon-diag/releases/tag/v0.3.0)
+- [MoonCakes 0.3.0](https://mooncakes.io/docs/btlqql/moon_diag@0.3.0)
