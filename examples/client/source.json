@@ -1,0 +1,7 @@
+{
+  "reference": "udsoncan",
+  "version": "1.26.1",
+  "peer": "author-written deterministic software ECU",
+  "hardware": false,
+  "exchanges": 7
+}

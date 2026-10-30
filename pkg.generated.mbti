@@ -1,0 +1,230 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "btlqql/moon_diag"
+
+// Values
+pub fn analyze_log(String) -> DiagReport
+
+pub fn analyze_uds_exchange(Array[DirectedUdsPayload]) -> UdsSessionReport
+
+pub fn analyze_uds_network(String) -> Array[UdsEcuReport] raise IsotpError
+
+pub fn analyze_uds_payload_log(String) -> UdsSessionReport raise IsotpError
+
+pub fn analyze_uds_session(String) -> UdsSessionReport raise IsotpError
+
+pub fn ascii(Array[Int]) -> String
+
+pub fn decode_dtc(Int, Int, status? : Int) -> Dtc
+
+pub fn decode_dtc_status(Int) -> Array[String]
+
+pub fn decode_obd_pid(Int, Array[Int]) -> ObdReading?
+
+pub fn decode_uds_dtc(Int, Int, Int, Int) -> Dtc
+
+pub fn filter_dtcs_by_status(Array[Dtc], Int) -> Array[Dtc]
+
+pub fn hex_can_id(Int) -> String
+
+pub fn hex_decode(String) -> Array[Int]?
+
+pub fn hex_encode(Array[Int]) -> String
+
+pub fn hex_int(Int, Int) -> String
+
+pub fn hex_nibble_char(Int) -> Char
+
+pub fn is_present_dtc(Int, Int) -> Bool
+
+pub fn is_present_uds_record(Int, Int, Int, Int) -> Bool
+
+pub fn nrc_description(Int) -> String
+
+pub fn parse_candump(String) -> Array[CanFrame]
+
+pub fn parse_candump_line(String) -> CanFrame?
+
+pub fn parse_did_response(Array[Int]) -> (Int, Array[Int])?
+
+pub fn parse_dtc_response(Array[Int]) -> Array[Dtc]?
+
+pub fn parse_obd_message(Array[Int]) -> ObdMessage
+
+pub fn parse_obd_mode06(Array[Int]) -> MonitorResult?
+
+pub fn parse_obd_vin(Array[Int]) -> String?
+
+pub fn parse_security_seed(Array[Int]) -> (Int, Array[Int])?
+
+pub fn parse_uds_message(Array[Int]) -> UdsMessage
+
+pub fn readiness_summary(Array[Int]) -> String
+
+pub fn render_csv(DiagReport) -> String
+
+pub fn render_json(DiagReport) -> String
+
+pub fn render_report(DiagReport) -> String
+
+pub fn render_uds_session(UdsSessionReport) -> String
+
+pub fn request_clear_dtc(Int) -> Array[Int]
+
+pub fn request_download(Int, Int) -> Array[Int]
+
+pub fn request_ecu_reset(Int) -> Array[Int]
+
+pub fn request_read_did(Int) -> Array[Int]
+
+pub fn request_read_dtc_by_status(Int) -> Array[Int]
+
+pub fn request_read_dtc_supported() -> Array[Int]
+
+pub fn request_routine_control(Int, Int, data? : Array[Int]) -> Array[Int]
+
+pub fn request_security_access(Int, key? : Array[Int]) -> Array[Int]
+
+pub fn request_session_control(Int, suppress_positive? : Bool) -> Array[Int]
+
+pub fn request_tester_present(suppress_positive? : Bool) -> Array[Int]
+
+pub fn request_transfer_data(Int, Array[Int]) -> Array[Int]
+
+pub fn request_transfer_exit() -> Array[Int]
+
+pub fn request_write_did(Int, Array[Int]) -> Array[Int]
+
+pub fn segment(Array[Int], frame_size? : Int) -> Array[Array[Int]] raise IsotpError
+
+pub fn session_name(Int) -> String
+
+pub fn summarize_by_id(DiagReport) -> Array[IdSummary]
+
+pub fn uds_service_name(Int) -> String
+
+// Errors
+pub(all) suberror IsotpError {
+  EmptyFrame
+  EmptyPayload
+  InvalidFrameSize(Int)
+  InvalidLength(Int)
+  TooLarge(Int)
+  UnexpectedFirstFrame
+  UnexpectedConsecutiveFrame
+  UnexpectedSingleFrame
+  BadSequence(Int, Int)
+  Incomplete(Int, Int)
+}
+
+// Types and methods
+pub(all) struct CanFrame {
+  channel : String
+  id : Int
+  extended : Bool
+  data : Array[Int]
+}
+pub fn CanFrame::new(String, Int, Bool, Array[Int]) -> Self
+pub fn CanFrame::to_candump(Self) -> String
+
+pub(all) enum DiagEvent {
+  UdsEvent(Int, UdsMessage)
+  ObdEvent(Int, ObdMessage)
+  RawEvent(Int, Array[Int])
+}
+
+pub(all) struct DiagReport {
+  frame_count : Int
+  events : Array[DiagEvent]
+  errors : Array[String]
+  incomplete_ids : Array[Int]
+  negative_count : Int
+  dtc_count : Int
+}
+
+pub(all) struct DirectedUdsPayload {
+  is_request : Bool
+  payload : Array[Int]
+}
+
+pub(all) struct Dtc {
+  code : String
+  system : String
+  description : String
+  failure_type : Int
+  status : Int
+  status_bits : Array[String]
+}
+
+pub(all) struct IdSummary {
+  can_id : Int
+  messages : Int
+  negatives : Int
+}
+
+pub(all) struct IsotpReassembler {
+  max_len : Int
+  mut expected : Int
+  mut payload : Array[Int]
+  mut next_seq : Int
+  mut active : Bool
+  mut flow_control : Int
+}
+pub fn IsotpReassembler::finish(Self) -> Unit raise IsotpError
+pub fn IsotpReassembler::flow_control_count(Self) -> Int
+pub fn IsotpReassembler::is_active(Self) -> Bool
+pub fn IsotpReassembler::new(max_len? : Int) -> Self
+pub fn IsotpReassembler::push(Self, Array[Int]) -> Array[Int]? raise IsotpError
+
+pub(all) struct MonitorResult {
+  mid : Int
+  tid : Int
+  unit : Int
+  value : Int
+}
+
+pub(all) enum ObdMessage {
+  Mode01(Int, Array[Int])
+  DtcResponse(Int, Array[Dtc])
+  Unknown(Array[Int])
+}
+
+pub(all) struct ObdReading {
+  pid : Int
+  label : String
+  value : String
+  unit : String
+  raw : Array[Int]
+}
+
+pub(all) struct UdsEcuReport {
+  channel : String
+  request_id : Int
+  report : UdsSessionReport
+}
+
+pub(all) enum UdsMessage {
+  Positive(Int, Array[Int])
+  Negative(Int, Int, String)
+  Malformed(String)
+}
+
+pub(all) struct UdsSessionIssue {
+  step : Int
+  code : String
+  severity : String
+  detail : String
+}
+
+pub(all) struct UdsSessionReport {
+  verdict : String
+  requests : Int
+  responses : Int
+  session : String
+  security_level : Int
+  transferred_bytes : Int
+  issues : Array[UdsSessionIssue]
+}
+
+// Type aliases
+
+// Traits

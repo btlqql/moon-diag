@@ -17,8 +17,10 @@ extern "js" fn exit_code(code : Int) -> Unit =
 
 fn usage() -> Unit {
   println(
-    "MoonDiag 0.1.0\n" +
+    "MoonDiag 0.3.0\n" +
     "Usage:\n" +
+    "  moondiag conversation <payload.log>     audit directed UDS payloads\n" +
+    "  moondiag session <candump.log>          audit each CAN interface and ECU\n" +
     "  moondiag report <candump.log>          decode a recorded session\n" +
     "  moondiag uds <hex>                     parse a UDS response\n" +
     "  moondiag obd <hex>                     decode an OBD-II response\n" +
@@ -156,11 +158,28 @@ fn run() -> Unit {
         exit_code(2)
       }
     }
+  } else if command == "conversation" && args.length() == 4 {
+    match read_text(args[3]) {
+      Some(text) => try {
+        let report = @diag.analyze_uds_payload_log(text)
+        println(@diag.render_uds_session(report))
+        if report.verdict == "fail" { exit_code(1) }
+      } catch { _ => { stderr("ERROR: invalid UDS payload log"); exit_code(1) } }
+      None => { stderr("ERROR: cannot read file"); exit_code(2) }
+    }
   } else if command == "session" && args.length() == 4 {
     match read_text(args[3]) {
       Some(text) => {
         let outcome = try {
-          Some(@diag.render_uds_session(@diag.analyze_uds_session(text)))
+          let report = @diag.analyze_uds_session(text)
+          let out = StringBuilder()
+          out.write_string(@diag.render_uds_session(report))
+          for ecu in @diag.analyze_uds_network(text) {
+            out.write_string("\nchannel=" + ecu.channel + " ECU request ID: " + ecu.request_id.to_string(radix=16) + "\n")
+            out.write_string(@diag.render_uds_session(ecu.report))
+          }
+          if report.verdict == "fail" { exit_code(1) }
+          Some(out.to_string())
         } catch {
           _ => None
         }
